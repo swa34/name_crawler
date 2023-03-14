@@ -1,45 +1,98 @@
 import requests
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 
-# Define the name or title you're looking for
-search_name = search_name = "4-H Agent, Colquitt County 4-H Educator, Office / Clerical Assistant, 4-H Agent, " \
-                            "4-H Agent, County Extension Agent - 4-H, Administrative Assistant, County Extension " \
-                            "Agent, Houston County Administrative Assistant, 4-H Agent, County Extension Coordinator, " \
-                            "4-H Agent, County Extension Educator - 4-H, County Extension Agent, " \
-                            "County Administrative Assistant, Franklin County Administrative Assistant, " \
-                            "FACS Educator, Jasper County Administrative Assistant, Public Service Professional, " \
-                            "Glynn County Administrative Assistant, County Administrative Assistant, Administrative " \
-                            "Assistant, FACS Agent, Dougherty County FACS Agent, County Administrative Assistant, " \
-                            "4-H Agent, McDuffie County Administrative Assistant, County Extension Agent - FACS, " \
-                            "County Extension Agent - FACS, County Extension Coordinator/ANR Agent, ANR Agent, " \
-                            "County Extension Agent, County Extension Coordinator/4-H Agent, County Extension " \
-                            "Coordinator/4-H Agent, Administrative Assistant, County Extension Coordinator- ANR, " \
-                            "County Extension Coordinator- ANR, County Extension Agent - ANR, County Extension " \
-                            "Coordinator/4-H Agent, Administrative Assistant, 4-H Agent, ANR Agent, County Extension " \
-                            "Coordinator and 4-H Youth Development Agent, County Extension Agent, 4-H Educator, " \
-                            "County Extension Agent, County Extension Agent - FACS/CEC, County Extension Agent - 4-H, " \
-                            "County Extension Agent - ANR, County Administrative Assistant, County Extension Agent - " \
-                            "4-H, 4-H Agent, County Extension Coordinator"
+# Define the names or titles you're looking for as a list
+search_names = ["4-H Agent", "Colquitt County 4-H Educator", "Office / Clerical Assistant",
+                "County Extension Agent - 4-H", "Administrative Assistant", "County Extension Coordinator",
+                "County Extension Educator - 4-H", "County Extension Agent - ANR", "FACS Educator",
+                "Public Service Professional", "County Extension Agent - FACS", "4-H Youth Development Agent",
+                "4-H Educator", "4-H Laurens County AmeriCorps",
+                "4H Program Assistant",
+                "4-H Program Specialist",
+                "4-H Tift County AmeriCorps State Member",
+                "4-H Youth Extension Educator",
+                "4-H/ANR Program Assistant",
+                "Administrative Assistant (ANR Clerk)",
+                "AG & Natural Resources Agent",
+                "Agriculture Specialist",
+                "AmeriCorps 4-H",
+                "ANR Agent",
+                "ANR Agent - County Coordinator",
+                "ANR Educator",
+                "ANR Program Assistant",
+                "ANR/4-H Agent",
+                "ANR/Master Gardner Program Assistant",
+                "Bleckley County Program Assistant - 4-H",
+                "Brooks County ANR Agent",
+                "Bryan County 4-H Agent",
+                "Bulloch County 4-H Educator",
+                "Burke County 4-H Educator",
+                "CEC and County Extension Agent - ANR",
+                "Coffee County 4-H Educator",
+                "Coffee County 4-H Program Assistant",
+                "Colquitt County 4-H Educator",
+                "Colquitt County Extension 4-H Agent",
+                "Columbia County 4-H Educator",
+                "Columbia County 4-H Program Assistant",
+                "Cook Co 4-H Agent",
+                "County 4-H Agent",
+                "County 4-H Educator",
+                "County Agent",
+                "County Agent - Family and Consumer Sciences",
+                "County Extension 4-H Agent",
+                "County Extension 4-H Educator",
+                "County Extension 4-H Program Assistant",
+                "County Extension Agent",
+                "County Extension Agent - 4-H",
+                "County Extension Agent - ANR",
+                "County Extension Agent - FACS",
+                "County Extension Agent - FACS/CEC",
+                "County Extension Agent - FACS/EFNEP",
+                "County Extension Agent- 4-H",
+                "County Extension Agent ANR",
+                "County Extension Agent, 4-H Youth",
+                "County Extension Agent, CP Pay Retire Rehire",
+                "County Extension Agent, FACS",
+                "County Extension ANR Agent",
+                "County Extension ANR Vegetable Agent",
+                "County Extension Associate - 4-H",
+                "County Extension Coordinator and 4-H Youth Development Agent",
+                "County Extension Coordinator- ANR",
+                "County Extension Coordinator/4-H Agent",
+                "County Extension Coordinator/Agent - 4-H",
+                "County Extension Coordinator/Agent: 4-H",
+                "County Extension Coordinator/ANR Agent", "County Extension ANR Vegetable Agent",
+                "County Extension Associate - 4-H",
+                "County Extension Coordinator and 4-H Youth Development Agent",
+                "County Extension Coordinator- ANR",
+                "County Extension Coordinator/4-H Agent",
+                "County Extension Coordinator/Agent - 4-H",
+                "County Extension Coordinator/Agent: 4-H",
+                "County Extension Coordinator/ANR Agent",
+                "County Extension Coordinator/FACS Agent",
+                "County Extension Coordinator-ANR",
+                "County Extension Educator - 4-H",
+                "County Extension Educator, 4-H",
+                "County Extension Program Assistant, 4-H",
+                "County Extension Program Assistant,4-H Youth",
+                "County Extension Secretary & Program Assistant, 4-H",
+                "Crisp County Extension Agent / Entomology Graduate Student",
+                "Crisp County FACS Agent",
+                "Dawson County Extension Coordinator/Lumpkin ANR Agent"]
 
-# Define a list of websites to check
-websites = [
+# Define the base URLs to search as a list
+base_urls = [
+    "https://extension.uga.edu",
     "https://site.extension.uga.edu/aaecext",
-    "https://site.caes.uga.edu/agsa",
     "https://site.caes.uga.edu/anthfood",
     "https://intranet.caes.uga.edu/extension-resources/reporting/reporting-procedures-gacounts/help-menu/",
     "https://site.extension.uga.edu/applingcrop",
-    "https://site.extension.uga.edu/baconag",
     "https://site.extension.uga.edu/beef",
-    "https://site.extension.uga.edu/berriencropcircles",
-    "https://site.extension.uga.edu/bettergrazing",
     "https://site.caes.uga.edu/blueberry",
     "https://site.extension.uga.edu/brooksag",
-    "https://site.extension.uga.edu/bryan",
-    "https://site.caes.uga.edu/bugcamp",
-    "https://site.extension.uga.edu/bulloch",
     "https://site.extension.uga.edu/bullochag",
     "https://site.extension.uga.edu/burke",
-    "https://site.extension.uga.edu/jenkinsag",
     "https://site.caes.uga.edu/burkelab",
     "https://www.caes.uga.edu/about/jobs.html",
     "https://agecon.uga.edu/",
@@ -62,19 +115,13 @@ websites = [
     "https://cfs.caes.uga.edu",
     "https://www.caes.uga.edu/departments/griffin-campus.html",
     "https://eowaterlab.caes.uga.edu/",
-    "https://site.caes.uga.edu/careers",
     "https://site.extension.uga.edu/cherokee",
-    "https://site.extension.uga.edu/clayton",
     "https://site.extension.uga.edu/climate",
     "https://coastalbg.uga.edu/",
     "https://site.extension.uga.edu/colquittag",
-    "https://site.caes.uga.edu/communications",
-    "https://site.extension.uga.edu/consumerhort/",
     "https://site.extension.uga.edu/cook",
-    "https://site.caes.uga.edu/cropprotection",
     "https://site.extension.uga.edu/dairy",
     "https://site.extension.uga.edu/dooly",
-    "https://blog.extension.uga.edu/effingham",
     "https://site.caes.uga.edu/entoclub",
     "https://site.caes.uga.edu/envirotron",
     "https://www.caes.uga.edu/events/awfd",
@@ -84,30 +131,13 @@ websites = [
     "https://extension.uga.edu/programs-services/science-behind-our-food.html",
     "https://site.extension.uga.edu/fayette",
     "https://site.caes.uga.edu/foodenglab",
-    "https://site.caes.uga.edu/foodscience",
-    "https://site.extension.uga.edu/foodscience/",
     "https://site.extension.uga.edu/forageteam",
     "https://site.extension.uga.edu/franklin",
     "https://site.extension.uga.edu/gacaa",
-    "https://site.caes.uga.edu/gae4-ha",
-    "https://site.caes.uga.edu/georgiaagtour",
     "https://site.caes.uga.edu/georgiaturf",
     "https://site.caes.uga.edu/ges",
     "https://site.extension.uga.edu/gnc",
-    "https://site.extension.uga.edu/gradyag",
-    "https://site.extension.uga.edu/growitknowit/",
-    "https://blog.extension.uga.edu/hartcattleforage",
-    "https://site.extension.uga.edu/healthybartow",
-    "https://site.caes.uga.edu/horticulture",
-    "https://site.caes.uga.edu/hortphys",
-    "https://www.esp.caes.uga.edu/",
-    "https://www.tswvramp.org",
-    "https://site.extension.uga.edu/htc",
-    "https://site.caes.uga.edu/huanaglab",
-    "https://site.caes.uga.edu/insectzoo",
     "https://site.extension.uga.edu/ipm",
-    "https://blog.extension.uga.edu/jasper",
-    "https://site.extension.uga.edu/jones",
     "https://site.caes.uga.edu/kvitkolab",
     "https://site.extension.uga.edu/laurens",
     "https://site.caes.uga.edu/lbcap",
@@ -115,59 +145,36 @@ websites = [
     "https://site.caes.uga.edu/mchughlab",
     "https://site.extension.uga.edu/mgevp",
     "https://site.extension.uga.edu/military",
-    "https://site.extension.uga.edu/mitchellag",
-    "https://site.extension.uga.edu/muscogeegreen",
     "https://site.caes.uga.edu/mycologylab",
-    "https://blog.caes.uga.edu/nce",
-    "https://site.extension.uga.edu/ne-district",
-    "https://site.extension.uga.edu/nochaway/",
-    "https://blog.extension.uga.edu/northgavineyards",
     "https://site.extension.uga.edu/oliverlab",
     "https://site.extension.uga.edu/peaches",
-    "https://site.extension.uga.edu/peanut",
-    "https://site.extension.uga.edu/peanutecon",
     "https://site.extension.uga.edu/peanutent",
     "https://site.extension.uga.edu/pecan",
-    "https://site.extension.uga.edu/pierce",
-    "https://site.caes.uga.edu/plantpathology",
     "https://site.extension.uga.edu/plowpoints",
     "https://site.caes.uga.edu/ftfpeanutlab",
     "https://site.extension.uga.edu/poultrytips",
-    "https://blog.extension.uga.edu/rockdalegardener",
     "https://site.caes.uga.edu/schmidtlab",
     "https://site.caes.uga.edu/sehaycontest",
     "https://site.caes.uga.edu/sehp",
     "https://soils.uga.edu/",
-    "https://site.extension.uga.edu/southeast-ag",
     "https://southernoutlook.caes.uga.edu",
-    "https://site.extension.uga.edu/southgaag",
-    "https://site.caes.uga.edu/soy2018",
-    "https://site.caes.uga.edu/soybeanlab",
-    "https://site.extension.uga.edu/spring-creek",
     "https://site.caes.uga.edu/strandlab",
     "https://site.extension.uga.edu/strawberry",
     "https://www.caes.uga.edu/students.html",
     "https://site.caes.uga.edu/studyabroad",
     "https://site.extension.uga.edu/tattnall",
     "https://site.caes.uga.edu/tech",
-    "https://site.extension.uga.edu/thomas",
     "https://thompsonlab.uga.edu/",
     "https://site.extension.uga.edu/threerivers",
-    "https://site.extension.uga.edu/tobacco",
-    "https://site.extension.uga.edu/trainingstaffdev",
     "https://site.caes.uga.edu/turfgrassbreeding",
-    "https://site.caes.uga.edu/ugarden",
     "https://site.caes.uga.edu/ugca",
     "https://site.caes.uga.edu/vegpath",
     "https://site.extension.uga.edu/viticulture",
     "https://site.caes.uga.edu/vogellab",
-    "https://blog.extension.uga.edu/walton",
     "https://site.extension.uga.edu/water",
-    "https://site.extension.uga.edu/web",
     "https://site.caes.uga.edu/whiteflies-tylcv",
     "https://site.extension.uga.edu/wilcoxcoag/",
     "https://site.caes.uga.edu/yanglab",
-    "https://site.caes.uga.edu/ieu",
     "https://extension.uga.edu/county-offices/pickens.html",
     "https://aquaculture.caes.uga.edu/",
     "https://peaches.caes.uga.edu/",
@@ -338,8 +345,6 @@ websites = [
     "https://extension.uga.edu/county-offices/taliaferro.html",
     "https://extension.uga.edu/county-offices/richmond.html",
     "https://site.extension.uga.edu/turnerab/",
-    "https://site.extension.uga.edu/southerndairy/",
-    "https://switchgrass.caes.uga.edu/",
     "https://bees.caes.uga.edu",
     "https://extension.uga.edu/programs-services/integrated-pest-management.html",
     "https://site.extension.uga.edu/benhillcoag/",
@@ -347,7 +352,6 @@ websites = [
     "https://intranet.caes.uga.edu/",
     "https://extension.uga.edu/programs-services/food-science.html",
     "https://wildpeanutlab.uga.edu/",
-    "https://site.caes.uga.edu/jacksonlab/",
     "https://site.caes.uga.edu/sec-lab/",
     "https://site.extension.uga.edu/fultonag/",
     "https://site.caes.uga.edu/fst/",
@@ -365,48 +369,33 @@ websites = [
     "https://georgiaforages.caes.uga.edu/",
     "https://site.extension.uga.edu/peqh/",
     "https://site.extension.uga.edu/burkeag/",
-    "https://site.extension.uga.edu/gabugs/",
-    "https://organic.uga.edu",
     "https://site.caes.uga.edu/esp/",
-    "https://site.caes.uga.edu/equinescience/",
     "https://site.caes.uga.edu/carpophiline-id/",
-    "https://site.caes.uga.edu/equine/",
     "https://site.caes.uga.edu/livestockarena/",
     "https://site.caes.uga.edu/soilmicro/",
-    "https://site.caes.uga.edu/organicinsects/",
     "https://site.caes.uga.edu/basingerlab",
     "https://site.caes.uga.edu/agl/",
     "https://agforecast.caes.uga.edu",
     "https://www.caes.uga.edu/alumni.html",
-    "https://ruralstress.uga.edu",
     "https://eowaterlab.caes.uga.edu/",
     "https://site.caes.uga.edu/pins/",
     "https://extension.uga.edu/programs-services/structural-pest-management.html",
-    "https://southscapes.caes.uga.edu",
     "https://intl-agday.caes.uga.edu",
     "https://grains.caes.uga.edu",
     "https://site.extension.uga.edu/laurensgarden/",
-    "https://site.extension.uga.edu/healthycolquitt",
     "https://site.extension.uga.edu/calhounag/",
     "https://site.caes.uga.edu/library-griffin/",
-    "https://site.extension.uga.edu/taylor4hsafe/",
-    "https://site.extension.uga.edu/twiggsag/",
     "https://site.caes.uga.edu/liwc/",
-    "https://site.extension.uga.edu/aghall/",
     "https://alec.caes.uga.edu/undergraduate/experiential-learning/focus.html",
-    "https://site.extension.uga.edu/houstonag/",
     "https://site.caes.uga.edu/springbreaktour/",
     "https://napb2019.uga.edu/",
     "https://site.extension.uga.edu/worthag/",
-    "https://site.extension.uga.edu/jasperag/",
     "https://site.extension.uga.edu/camdenanr/",
     "https://site.caes.uga.edu/chavezlab/",
     "https://site.extension.uga.edu/tattnall4h/",
     "https://site.extension.uga.edu/vidaliaonion/",
     "https://site.extension.uga.edu/doughertyhort/",
     "https://site.extension.uga.edu/sfsi/",
-    "https://site.extension.uga.edu/decaturcoag/",
-    "https://agwet.caes.uga.edu/",
     "https://site.extension.uga.edu/tiftcoag/",
     "https://site.caes.uga.edu/blackflylab",
     "https://equine.caes.uga.edu",
@@ -415,7 +404,6 @@ websites = [
     "https://espl.caes.uga.edu",
     "https://site.caes.uga.edu/ornapath",
     "https://site.extension.uga.edu/aware/",
-    "https://site.extension.uga.edu/healthiertaliaferro",
     "https://omc.caes.uga.edu",
     "https://site.extension.uga.edu/bartow/",
     "https://site.extension.uga.edu/organic/",
@@ -428,65 +416,45 @@ websites = [
     "https://nwgeorgia.caes.uga.edu",
     "https://segeorgia.caes.uga.edu",
     "https://swgeorgia.caes.uga.edu",
-    "https://vidaliaonion.caes.uga.edu",
     "https://site.caes.uga.edu/smartfoodprocessinglab/",
     "https://site.caes.uga.edu/agroecology/",
-    "https://site.extension.uga.edu/crispcofacs/",
-    "https://site.extension.uga.edu/floyd4h/",
-    "https://site.extension.uga.edu/stephenscoag/",
     "https://site.caes.uga.edu/yaoyaolab/",
     'https://site.extension.uga.edu/crispcoag/',
-    'https://site.extension.uga.edu/walton/',
     'https://site.caes.uga.edu/esseililab/',
     'https://site.caes.uga.edu/smallfruitentolab/',
     'https://site.caes.uga.edu/mitchumlab/',
     'https://site.caes.uga.edu/trishjmoorelab/',
-    'https://site.caes.uga.edu/nema/',
     'https://smallfruits.org/',
     'https://site.caes.uga.edu/duttalab/',
-    'https://site.caes.uga.edu/mcgregorlab/',
     'https://nambeesanlab.uga.edu/',
-    'https://site.caes.uga.edu/springbreak2020/',
     'https://site.extension.uga.edu/maconcountyagnews/',
     'https://site.extension.uga.edu/lincoln/',
     'https://site.extension.uga.edu/paulding/',
     'https://site.extension.uga.edu/georgia4hscience/',
     'https://site.extension.uga.edu/bilingualopinions/',
-    'https://site.extension.uga.edu/colquittveg/',
-    'https://site.caes.uga.edu/biometeorology/',
     'https://site.caes.uga.edu/agedstudentteaching/',
     'https://site.extension.uga.edu/madison/',
-    'https://site.caes.uga.edu/orangebulldogpumpkin/',
-    'https://site.caes.uga.edu/woodies/',
-    'https://site.extension.uga.edu/glynnag/',
     'https://site.caes.uga.edu/plantvirologylab/',
     'https://site.extension.uga.edu/newtonextanr/',
     'https://site.caes.uga.edu/hortjobs/',
     'https://extension.uga.edu/county-offices.html',
     'https://site.caes.uga.edu/fmlab/',
-    'https://site.extension.uga.edu/gapeanutagr/',
     'https://site.extension.uga.edu/evansag/',
     'https://site.extension.uga.edu/jackson4h/',
     'https://site.extension.uga.edu/effinghamanr/',
     'https://site.caes.uga.edu/itlelab/',
     'https://site.extension.uga.edu/postharvest/',
     'https://site.extension.uga.edu/fannin-gilmer/',
-    'https://site.extension.uga.edu/claytonwellness/',
     'https://site.caes.uga.edu/ikassem/',
-    'https://site.caes.uga.edu/teachag/',
     'https://site.extension.uga.edu/georgiagreen/',
     'https://site.extension.uga.edu/precisionag/',
-    'https://site.caes.uga.edu/alternariabroccoliproject/',
-    'https://site.uga.uga.edu/panvardb/',
     'https://site.caes.uga.edu/ajmoorelab/',
     'https://site.caes.uga.edu/tnrrl/',
     'https://site.extension.uga.edu/barrowanr',
-    'https://site.extension.uga.edu/georgiagrains/',
     'https://site.extension.uga.edu/lanierclinchag/',
     'https://site.caes.uga.edu/alumni/',
     'https://site.extension.uga.edu/anrep/',
     'https://site.extension.uga.edu/townsandunionag/',
-    'https://site.caes.uga.edu/ips/',
     'https://site.extension.uga.edu/healthiertogether/',
     'https://site.extension.uga.edu/gapples/',
     'https://site.caes.uga.edu/bramanlab/',
@@ -496,40 +464,29 @@ websites = [
     'https://site.caes.uga.edu/scriturf/',
     'https://site.extension.uga.edu/gardener/',
     "https://site.caes.uga.edu/srinivasanlab/",
-    "https://site.extension.uga.edu/radon/",
     "https://site.extension.uga.edu/hie/",
     "https://site.extension.uga.edu/dbl/",
     "https://site.extension.uga.edu/extensionreads/",
     "https://site.caes.uga.edu/springbreak2019/",
     "https://site.extension.uga.edu/textiles/",
     "https://site.extension.uga.edu/pshp/",
-    "https://site.caes.uga.edu/cultivatingconnections2020",
     "https://extension.uga.edu/programs-services/radon-testing.html",
-    "https://site.caes.uga.edu/poultrysciencebuilding/",
     "https://site.extension.uga.edu/extinterns/",
     "https://site.extension.uga.edu/jackson/",
     "https://site.extension.uga.edu/foodscene/",
-    "https://precisionag.caes.uga.edu/",
     "https://site.extension.uga.edu/greenway/",
     "https://site.extension.uga.edu/project-find/",
     "https://site.caes.uga.edu/job-board/",
-    "https://site.caes.uga.edu/ferrarezilab/",
     "https://site.caes.uga.edu/lammlab/",
     "https://site.extension.uga.edu/colquitthomeowners/",
-    "https://site.caes.uga.edu/bahrilab",
     "https://site.extension.uga.edu/eat-healthy-be-active/",
     "https://site.caes.uga.edu/hortscholarships/",
-    "https://site.caes.uga.edu/westlaboratory/",
     "https://site.caes.uga.edu/springbreaktour/",
-    "https://site.caes.uga.edu/bug2school/",
-    "https://site.caes.uga.edu/leadinginnovation/",
     "https://site.extension.uga.edu/eae/",
-    "https://site.caes.uga.edu/cultivatingimpact/", 'https://site.extension.uga.edu/seminoleag/',
+    'https://site.extension.uga.edu/seminoleag/',
     'https://site.caes.uga.edu/adsmeatstore/',
     'https://extension.uga.edu/about/join-our-team.html',
     'https://site.caes.uga.edu/jespersenlab/',
-    'https://site.caes.uga.edu/rbc/',
-    'https://site.caes.uga.edu/stelzlab/',
     'https://site.extension.uga.edu/preventopioidmisuse/',
     'https://site.caes.uga.edu/rcrlab/',
     'https://greenhouses.caes.uga.edu/',
@@ -543,61 +500,61 @@ websites = [
     'https://site.caes.uga.edu/yulab/',
     'https://site.caes.uga.edu/epuraeaocularis/',
     'https://site.caes.uga.edu/tiftonpostdocs/',
-    'https://site.caes.uga.edu/hortclub/',
     'https://site.extension.uga.edu/fayette/',
     'https://site.extension.uga.edu/benhill4h/',
     'https://site.extension.uga.edu/thriving/',
     'https://psep.uga.edu',
-    'https://site.caes.uga.edu/lacerda/',
     'https://site.extension.uga.edu/forsyth/',
-    'https://site.extension.uga.edu/monroefacs/',
     'https://site.extension.uga.edu/gardenwhereyouare/',
     'https://site.caes.uga.edu/sandlin/',
     'https://site.caes.uga.edu/josephlab/',
     'https://site.extension.uga.edu/gmanr/',
     'https://site.extension.uga.edu/camden4h/',
     'https://site.extension.uga.edu/oglethorpe/',
-    'https://site.caes.uga.edu/agtechdata',
-    'https://dairy.caes.uga.edu/',
-    'https://cagt.caes.uga.edu',
     'https://site.extension.uga.edu/foodscienceandtechnology/',
-    'https://site.extension.uga.edu/equine/',
     'https://site.caes.uga.edu/griffin/']
 
 # Open a file to write the search results
-with open('results/search_results_ab.txt', 'w') as f:
-
-    # Loop through each website in the list
-    for website in websites:
-
-        # Send a request to the website and get the HTML content
+with open('results/search_results.txt', 'w') as f:
+    # Loop through each base URL
+    for base_url in base_urls:
+        # Send a request to the base URL and get the HTML content
         try:
-            response = requests.get(website)
+            response = requests.get(base_url)
             response.raise_for_status()
             html_content = response.content
         except requests.exceptions.RequestException as e:
-            print(f"Could not retrieve {website}: {e}")
-            continue  # Skip to the next website
+            print(f"Could not retrieve {base_url}: {e}")
+            continue  # Skip to the next base URL
 
-        # Parse the HTML content using BeautifulSoup
+        # Parse the HTML content using BeautifulSoup and extract all links from the page
         soup = BeautifulSoup(html_content, 'html.parser')
+        links = [link.get('href') for link in soup.find_all('a')]
 
-        # Check if soup is a list
-        if isinstance(soup, list):
-            print(f"{website} returned a list")
-            continue  # Skip to the next website
+        # Loop through each link and search for the search terms
+        for link in links:
+            # Combine the link with the base URL to create the full URL
+            full_url = urljoin(base_url, link)
 
-        # Find all instances of the search term in the HTML and write the results to a file
-        if isinstance(search_name, str):
-            search_results = soup.find_all(string=lambda text: search_name.lower() in str(text).lower())
-            if len(search_results) > 0:
-                f.write(f"Search term '{search_name}' found on {website}:\n")
-                for result in search_results:
-                    f.write(f"\t{result}\n")
-                    print(f"{search_name} found on {website}: {result}")
-            else:
-                f.write(f"Search term '{search_name}' not found on {website}\n")
-                print(f"{search_name} not found on {website}")
-        else:
-            print("Search name must be a string")
-            break
+            # Send a request to the page and get the HTML content
+            try:
+                response = requests.get(full_url)
+                response.raise_for_status()
+                html_content = response.content
+            except requests.exceptions.RequestException as e:
+                print(f"Could not retrieve {full_url}: {e}")
+                continue  # Skip to the next page
+
+            # Parse the HTML content using BeautifulSoup
+            soup = BeautifulSoup(html_content, 'html.parser')
+
+            # Loop through each search term and write the results to a file if found
+            for search_name in search_names:
+                search_results = soup.find_all(string=lambda text: search_name.lower() in str(text).lower())
+                if len(search_results) > 0:
+                    f.write(f"\nSearch term '{search_name}' found on {full_url}:\n")
+                    count = len(search_results)
+                    f.write(f"\tFound {count} times.\n")
+                    for result in search_results:
+                        f.write(f"\t{result}\n")
+                        print(f"{search_name} found on {full_url}: {result}")
